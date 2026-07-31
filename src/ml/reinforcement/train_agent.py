@@ -1,81 +1,125 @@
-from environment import SmartLearningEnv
-from agent import QLearningAgent
-import os
-import numpy as np
+"""
+Entrenamiento del agente Q-Learning con validación y métricas.
+"""
 
-def train():
-    env = SmartLearningEnv()
-    agent = QLearningAgent(num_states=env.num_states, num_actions=env.num_actions)
+import numpy as np
+import pandas as pd
+import json
+from pathlib import Path
+from environment import MovieRecommendationEnv
+from agent import QLearningAgent
+
+def train_agent():
+    """Entrena el agente RL con validación"""
     
+    print(" Iniciando entrenamiento del agente RL...")
+    
+    # 1. Inicializar entorno y agente
+    env = MovieRecommendationEnv()
+    agent = QLearningAgent(
+        num_states=env.num_states,
+        num_actions=env.num_actions,
+        learning_rate=0.1,
+        discount_factor=0.95,
+        exploration_rate=1.0
+    )
+    
+    # 2. Parámetros de entrenamiento
     episodes = 5000
-    print(f"Entrenando al agente por {episodes} episodios...")
+    validation_episodes = 100
     
-    rewards = []
+    # Obtener usuarios para entrenamiento
+    users = env.ratings['userId'].unique()
+    print(f"\n Entrenando con {len(users)} usuarios")
+    print(f"   Episodios: {episodes}")
+    print(f"   Estados: {env.num_states}")
+    print(f"   Acciones: {env.num_actions}")
+    
+    # 3. Entrenamiento
+    print("\n Entrenando...")
+    episode_rewards = []
     
     for episode in range(episodes):
-        # Seleccionamos un perfil de estudiante al azar para simular
-        state = np.random.randint(0, env.num_states)
+        # Seleccionar usuario aleatorio
+        user_id = np.random.choice(users)
         
-        # El agente elige una recomendación
+        # Obtener estado inicial (cluster preferido del usuario)
+        state = env.get_state_for_user(user_id)
+        
+        # Elegir acción
         action = agent.choose_action(state)
         
-        # Obtenemos el feedback (recompensa)
-        reward = env.get_reward(state, action)
-        rewards.append(reward)
+        # Obtener recompensa
+        reward = env.get_reward(state, action, user_id)
+        episode_rewards.append(reward)
         
-        # Para este caso simplificado
-        next_state = state 
+        # Actualizar Q-Table (next_state = mismo estado para simplificar)
+        agent.update(state, action, reward, state)
         
-        # El agente aprende de la experiencia
-        agent.update(state, action, reward, next_state)
+        # Decaer epsilon
+        if episode < episodes * 0.8:  # Decaer por 80% del entrenamiento
+            agent.decay_epsilon(decay_rate=0.998, min_epsilon=0.01)
         
-        # Decaimiento de la exploración (epsilon)
-        if agent.epsilon > 0.01:
-            agent.epsilon *= 0.995
-
-    print("\nEntrenamiento finalizado. Tabla Q resultante:")
-    print(agent.q_table)
+        # Mostrar progreso cada 1000 episodios
+        if (episode + 1) % 1000 == 0:
+            avg_reward = np.mean(episode_rewards[-100:])
+            print(f"   Episodio {episode+1}/{episodes}: "
+                  f"Avg Reward (últimos 100) = {avg_reward:.3f}, "
+                  f"Epsilon = {agent.epsilon:.3f}")
     
-    # Guardar modelo localmente
-    model_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models")
-    os.makedirs(model_dir, exist_ok=True)
-    model_path = os.path.join(model_dir, "q_table.json")
+    # 4. Validación final
+    print("\n Validando agente...")
+    validation_rewards = []
     
-    agent.save_model(model_path)
-    print(f"\nModelo RL guardado localmente en: {model_path}")
-    
-    # Integración con Databricks MLflow (Senior MLOps)
-    try:
-        import mlflow
-        print("\nConectando a Databricks MLflow para registrar RL...")
-        mlflow.set_tracking_uri("databricks")
-        experiment_name = os.getenv("MLFLOW_EXPERIMENT_NAME", "/Shared/mlops_clustering_prod")
-        mlflow.set_experiment(experiment_name)
+    for _ in range(validation_episodes):
+        user_id = np.random.choice(users)
+        state = env.get_state_for_user(user_id)
         
-        with mlflow.start_run(run_name="RL_Q_Learning_Training"):
-            mlflow.log_param("episodes", episodes)
-            mlflow.log_param("learning_rate", agent.alpha)
-            mlflow.log_param("discount_factor", agent.gamma)
-            
-            # Métrica Interna: Recompensa promedio final
-            avg_reward = np.mean(rewards[-100:])
-            mlflow.log_metric("avg_reward_last_100", avg_reward)
-            
-            # Validación Externa (Senior Proxy Metric): Expert Agreement Rate
-            # ¿Qué tan bien se alinea la política aprendida con el escenario ideal?
-            optimal_rewards = sum(env.get_reward(s, np.argmax(agent.q_table[s, :])) for s in range(env.num_states))
-            # Suponiendo que la recompensa ideal para cada estado es 1.0 (aprobado máximo)
-            max_possible_reward = env.num_states * 1.0 
-            agreement_rate = optimal_rewards / max_possible_reward
-            
-            mlflow.log_metric("expert_agreement_rate", agreement_rate)
-            
-            # Guardamos el JSON como artefacto en MLflow
-            mlflow.log_artifact(model_path, "q_learning_policy")
-            
-            print(f"✅ ¡Modelo RL registrado en Databricks! (Avg Reward: {avg_reward:.3f} | Agreement Rate: {agreement_rate:.3f})")
-    except Exception as e:
-        print(f"\n⚠️ Advertencia: No se pudo conectar a Databricks MLflow ({e}).")
+        # Usar política greedy (sin exploración)
+        agent.epsilon = 0.0
+        action = agent.choose_action(state)
+        reward = env.get_reward(state, action, user_id)
+        validation_rewards.append(reward)
+    
+    avg_validation = np.mean(validation_rewards)
+    print(f"   Recompensa promedio en validación: {avg_validation:.3f}")
+    
+    # 5. Guardar modelo
+    models_dir = Path("src/models")
+    models_dir.mkdir(parents=True, exist_ok=True)
+    model_path = models_dir / 'q_table.json'
+    
+    agent.save_model(str(model_path))
+    print(f"\n Modelo guardado en {model_path}")
+    
+    # 6. Guardar métricas
+    metrics = {
+        'episodes': episodes,
+        'validation_episodes': validation_episodes,
+        'avg_reward_training': float(np.mean(episode_rewards[-100:])),
+        'avg_reward_validation': float(avg_validation),
+        'final_epsilon': float(agent.epsilon),
+        'num_states': env.num_states,
+        'num_actions': env.num_actions,
+        'q_table': agent.q_table.tolist(),
+        'best_actions': [int(np.argmax(agent.q_table[s, :])) for s in range(env.num_states)],
+        'learning_rate': agent.alpha,
+        'discount_factor': agent.gamma
+    }
+    
+    with open(models_dir / 'rl_metrics.json', 'w') as f:
+        json.dump(metrics, f, indent=2)
+    print(f" Métricas guardadas en rl_metrics.json")
+    
+    # 7. Mostrar política aprendida
+    print("\n Política aprendida:")
+    action_names = {0: 'Explotar', 1: 'Explorar', 2: 'Mezclar'}
+    for state in range(env.num_states):
+        best_action = np.argmax(agent.q_table[state, :])
+        print(f"   Cluster {state}: {action_names[best_action]} "
+              f"(Q={agent.q_table[state, best_action]:.3f})")
+    
+    return agent, metrics
 
 if __name__ == "__main__":
-    train()
+    train_agent()

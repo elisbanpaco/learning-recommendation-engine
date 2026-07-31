@@ -1,0 +1,42 @@
+{
+  "n_clusters": 10,
+  "silhouette_score": 0.24810200338376903,
+  "davies_bouldin_score": 1.3041520347855386,
+  "inertia": 101628.6302982192,
+  "n_samples": 9742,
+  "n_features": 20,
+  "feature_names": [
+    "(no genres listed)",
+    "Action",
+    "Adventure",
+    "Animation",
+    "Children",
+    "Comedy",
+    "Crime",
+    "Documentary",
+    "Drama",
+    "Fantasy",
+    "Film-Noir",
+    "Horror",
+    "IMAX",
+    "Musical",
+    "Mystery",
+    "Romance",
+    "Sci-Fi",
+    "Thriller",
+    "War",
+    "Western"
+  ],
+  "cluster_distribution": {
+    "4": 4274,
+    "1": 1427,
+    "2": 1193,
+    "3": 1031,
+    "0": 943,
+    "6": 431,
+    "8": 164,
+    "9": 158,
+    "7": 87,
+    "5": 34
+  }
+}

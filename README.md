@@ -1,104 +1,221 @@
 <div align="center">
-  <h1>🧠 AI Smart Learning Platform</h1>
-  <p><i>Plataforma adaptativa que combina Aprendizaje No Supervisado, Reinforcement Learning y una arquitectura MLOps Serverless.</i></p>
+  <h1>🎬 Movie Recommender with RL</h1>
+  <p><i>Sistema de recomendación de películas que combina Aprendizaje No Supervisado, Reinforcement Learning y una arquitectura MLOps Serverless.</i></p>
   
   [![Python](https://img.shields.io/badge/Python-3.13-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
   [![uv](https://img.shields.io/badge/uv-Fast%20Dependency%20Manager-purple.svg)](https://github.com/astral-sh/uv)
   [![FastAPI](https://img.shields.io/badge/FastAPI-0.140.0-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
   [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.9.0-F7931E.svg?style=flat&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-  [![Render](https://img.shields.io/badge/Render-CD-46E3B7.svg?style=flat&logo=render&logoColor=white)](https://render.com/)
+  [![MovieLens](https://img.shields.io/badge/Dataset-MovieLens%20Latest%20Small-FF6B6B.svg?style=flat)](https://grouplens.org/datasets/movielens/latest/)
 </div>
 
 ---
 
 ## 📖 Sobre el Proyecto
 
-Este proyecto es una aplicación de grado de producción diseñada para revolucionar la educación personalizada. Va más allá de las predicciones clásicas, integrando un flujo completo de Inteligencia Artificial que **descubre perfiles** y **aprende a recomendar** intervenciones pedagógicas, todo sostenido por pipelines automáticos de **MLOps**.
+Este proyecto es una aplicación de recomendación de películas que combina técnicas avanzadas de Machine Learning para ofrecer recomendaciones personalizadas e inteligentes. El sistema utiliza:
 
-El núcleo del sistema resuelve un problema secuencial real:
-1. No tenemos a los estudiantes etiquetados previamente.
-2. Necesitamos tomar decisiones que maximicen el rendimiento del estudiante a largo plazo.
+- **Aprendizaje No Supervisado (K-Means):** Para agrupar películas por similitud de géneros y descubrir patrones ocultos.
+- **Sistema de Recomendación (SVD):** Para predecir calificaciones de usuarios basado en factorización matricial.
+- **Aprendizaje por Refuerzo (Q-Learning):** Un agente inteligente que aprende qué estrategia de recomendación usar para cada usuario.
 
-Para solucionarlo, el proyecto fusiona dos paradigmas de la IA:
-*   **Aprendizaje No Supervisado (Clustering con K-Means):** Para descubrir grupos ocultos de comportamiento estudiantil.
-*   **Aprendizaje por Refuerzo (Q-Learning Clásico):** Un agente inteligente que aprende qué acción (video, cuestionario, descanso, alerta) es matemáticamente óptima para cada perfil.
-
----
-
-## 📊 Los Datos (Dataset Real)
-
-Se utilizó un dataset público y real para evitar escenarios sintéticos irreales:
-**[Student Performance Dataset (UCI Machine Learning Repository)](https://archive.ics.uci.edu/ml/datasets/student+performance)**
-
-*   **Origen:** Datos reales de estudiantes portugueses de secundaria.
-*   **Características procesadas (Feature Engineering):**
-    *   `studytime`: Horas de estudio dedicadas a la semana.
-    *   `absences`: Cantidad de ausencias.
-    *   `failures`: Clases reprobadas históricamente.
-    *   `G3`: Nota final (Escala 0-20).
-
-Los datos crudos son procesados mediante `StandardScaler` antes de ser inyectados al algoritmo de Clustering.
+El sistema resuelve un problema secuencial real:
+1. No tenemos etiquetas previas sobre los gustos de los usuarios.
+2. Necesitamos tomar decisiones que maximicen la satisfacción del usuario a largo plazo.
+3. El sistema debe adaptarse y aprender de las interacciones del usuario.
 
 ---
 
-## 🧠 Flujo de la Inteligencia Artificial (Pipeline de Inferencia)
+## 📊 Los Datos
 
-La magia del sistema radica en cómo colaboran los modelos en tiempo real. A diferencia de los pipelines tradicionales (`Usuario -> Modelo -> Predicción`), nuestra arquitectura utiliza un enfoque multicapa:
+Se utilizó el dataset **MovieLens Latest Small**, un dataset público y real de calificaciones de películas:
+
+**[MovieLens Latest Small Dataset](https://grouplens.org/datasets/movielens/latest/)**
+
+| Característica | Valor |
+|----------------|-------|
+| **Calificaciones** | 100,836 |
+| **Usuarios** | 610 |
+| **Películas** | 9,742 |
+| **Formato** | CSV con cabeceras |
+| **Escala de ratings** | 0.5 - 5.0 estrellas |
+| **Géneros** | 19 géneros (pipe-separated) |
+
+**Archivos del dataset:**
+- `ratings.csv`: Calificaciones de usuarios (userId, movieId, rating, timestamp)
+- `movies.csv`: Información de películas (movieId, title, genres)
+- `tags.csv`: Etiquetas generadas por usuarios (userId, movieId, tag, timestamp)
+- `links.csv`: Enlaces a IMDb y TMDB (movieId, imdbId, tmdbId)
+
+---
+
+## 🧠 Arquitectura del Sistema
+
+### Flujo de Inferencia
 
 ```mermaid
 flowchart TD
     classDef user fill:#181717,stroke:#fff,stroke-width:2px,color:#fff
     classDef clustering fill:#f9a826,stroke:#fff,stroke-width:2px,color:#111
+    classDef svd fill:#4a9eff,stroke:#fff,stroke-width:2px,color:#fff
     classDef rl fill:#009688,stroke:#fff,stroke-width:2px,color:#fff
     classDef api fill:#1e40af,stroke:#fff,stroke-width:2px,color:#fff
 
-    U["👨‍🎓 Frontend Web <br> Datos del Estudiante"]:::user -->|Ingresa Horas y Nota| API["🚀 FastAPI Backend"]:::api
-    API -->|1. Escala los datos| C["🧩 K-Means Model <br> Aprendizaje No Supervisado"]:::clustering
-    C -->|2. Asigna un Perfil - Ej. Riesgo de Abandono| RL["🤖 Agente Q-Learning <br> Aprendizaje por Refuerzo"]:::rl
-    RL -->|3. Ecuacion de Bellman - Busca Accion Optima| A["🎯 Mejor Intervencion - Ej. Enviar Alerta"]:::rl
-    A -->|4. Respuesta JSON| API
-    API -->|Muestra Recomendacion| U
+    U["👤 Usuario<br>Ingresa User ID"]:::user -->|POST /api/recommend| API["🚀 FastAPI Backend"]:::api
+    API -->|1. Busca historial de ratings| SVD["📊 SVD Model<br>Sistema de Recomendación"]:::svd
+    SVD -->|2. Predice ratings para cada película| C["🧩 K-Means Model<br>Clustering de Películas"]:::clustering
+    C -->|3. Identifica Cluster Favorito| RL["🤖 Agente Q-Learning<br>Aprendizaje por Refuerzo"]:::rl
+    RL -->|4. Ecuación de Bellman<br>Elige estrategia óptima| A["🎯 Estrategia:<br>Explotar / Explorar / Mezclar"]:::rl
+    A -->|5. Selecciona Top 5 películas| API
+    API -->|Muestra Recomendaciones| U
 ```
 
-### 1. El Clustering (K-Means)
-Extrae 4 perfiles distintos de estudiantes a partir de los datos multidimensionales. El modelo fue entrenado previamente (ver `src/ml/clustering/train_kmeans.py`) y exportado mediante `joblib` a `src/models/kmeans_model.pkl`.
+### Componentes del Sistema
 
-### 2. El Agente (Q-Learning)
-Utiliza una *Q-Table* que actúa como su memoria. Durante su entrenamiento, el agente interactuó con los perfiles simulando 5000 episodios. Aprendió, mediante recompensas positivas y negativas (retrasos, abandonos, mejoras en notas), qué intervención es mejor para cada estado. Su "cerebro" está serializado en `src/models/q_table.json`.
+#### 1. Clustering (K-Means) - Aprendizaje No Supervisado
+Agrupa las 9,742 películas en **10 clusters** basados en sus géneros. Cada cluster representa un grupo de películas similares:
+
+| Cluster | Géneros predominantes | Ejemplos de películas |
+|---------|----------------------|----------------------|
+| 0 | Action, Adventure, Sci-Fi | Star Wars, The Matrix |
+| 1 | Comedy, Romance | When Harry Met Sally |
+| 2 | Drama, Crime | The Godfather, Pulp Fiction |
+| 3 | Animation, Children | Toy Story, Frozen |
+| 4 | Horror, Thriller | The Shining, Psycho |
+| 5 | Documentary | March of the Penguins |
+| 6 | Musical, Romance | La La Land, Moulin Rouge |
+| 7 | War, Western | Saving Private Ryan |
+| 8 | Film-Noir, Mystery | The Third Man |
+| 9 | Adventure, Action, Drama | Interstellar, Inception |
+
+#### 2. Sistema de Recomendación (SVD) - Factorización Matricial
+Utiliza **Factorización Matricial** para predecir qué calificación daría un usuario a una película que no ha visto. El modelo fue entrenado con:
+
+- **Hiperparámetros optimizados:** n_factors=100, n_epochs=30, lr_all=0.01, reg_all=0.05
+- **Métricas:** RMSE=0.8567, MAE=0.6562
+
+#### 3. Agente RL (Q-Learning) - Aprendizaje por Refuerzo
+Un agente inteligente que aprende qué **estrategia de recomendación** usar para cada cluster:
+
+| Acción | Estrategia | Descripción |
+|--------|-----------|-------------|
+| ⭐ **Exploit** | Popular Choice | Recomienda las películas más populares del cluster favorito |
+| 🔍 **Explore** | New Discovery | Recomienda películas de otros clusters (descubrimiento) |
+| 🎭 **Mix** | Similar Taste | Recomienda películas de clusters cercanos (equilibrio) |
+
+El agente utiliza una **Q-Table** (6x3) que almacena el valor de cada acción para cada estado, y se actualiza en tiempo real con el feedback del usuario.
 
 ---
 
-## 🏗️ Arquitectura MLOps (CI/CD)
-
-El desarrollo del modelo no sirve de nada si no llega a producción. Este proyecto integra **MLOps End-to-End Serverless**.
+## 🏗️ Estructura del Proyecto
 
 ```text
-.
-├── .github/workflows/       # Pipelines (Actions)
-│   ├── ci.yml               # Integración Continua y Experimentación
-│   ├── cd.yml               # Despliegue Continuo a Render
+learning-recommendation-engine/
+│
+├── .github/workflows/       # Pipelines MLOps (CI/CD/CT)
+│   ├── ci.yml               # Integración Continua
+│   ├── cd.yml               # Despliegue Continuo
 │   └── ct.yml               # Entrenamiento Continuo (Cron)
-├── src/
-│   ├── api/                 # Backend FastAPI y vistas Jinja2 (Frontend)
-│   ├── core/                # Configuraciones base (.gitkeep)
-│   ├── ml/                  # Lógica de Modelos
-│   │   ├── clustering/      # Inferencias y entrenamiento de K-Means
-│   │   └── reinforcement/   # Entorno, Agente RL y entrenamiento
-│   └── models/              # Artefactos (Q-Table, Modelos PKL, Scaler)
+│
 ├── data/
-│   ├── raw/                 # Dataset original UCI (Ignorado en git)
-│   └── processed/           # Datos limpios y escalados por el pipeline (Ignorado en git)
-├── notebooks/               # Jupyter notebooks para Exploración de Datos (EDA)
-├── databricks/              # Scripts para ejecución remota en la nube
-├── tests/                   # Pruebas Unitarias del comportamiento de la IA
-├── pyproject.toml           # Dependencias manejadas ultra rápido por `uv`
-└── uv.lock                  # Determinismo de entorno
+│   ├── raw/                 # Dataset original MovieLens
+│   │   └── ml-latest-small/
+│   │       ├── ratings.csv
+│   │       ├── movies.csv
+│   │       ├── tags.csv
+│   │       └── links.csv
+│   └── processed/           # Datos procesados
+│       ├── ratings_clean.csv
+│       ├── movies_with_genres.csv
+│       └── movies_with_clusters.csv
+│
+├── src/
+│   ├── api/                 # Backend FastAPI
+│   │   ├── main.py          # Punto de entrada
+│   │   └── schemas.py       # Esquemas Pydantic
+│   │
+│   ├── ml/                  # Lógica de Machine Learning
+│   │   ├── clustering/      # K-Means
+│   │   │   ├── train_clustering.py
+│   │   │   └── infer_cluster.py
+│   │   ├── recommendation/  # SVD
+│   │   │   └── train_svd.py
+│   │   └── reinforcement/   # Q-Learning
+│   │       ├── agent.py
+│   │       ├── environment.py
+│   │       └── train_agent.py
+│   │
+│   ├── models/              # Artefactos (modelos serializados)
+│   │   ├── movie_kmeans.pkl
+│   │   ├── movie_scaler.pkl
+│   │   ├── svd_model.pkl
+│   │   ├── q_table.json
+│   │   ├── clustering_metrics.json
+│   │   ├── svd_metrics.json
+│   │   └── rl_metrics.json
+│   │
+│   ├── static/              # Archivos estáticos (CSS)
+│   │   └── style.css
+│   │
+│   └── templates/           # Templates HTML
+│       └── index.html
+│
+├── scripts/                 # Scripts de utilidad
+│   └── preprocess_data.py
+│
+├── notebooks/               # Jupyter notebooks (EDA)
+│
+├── tests/                   # Pruebas unitarias
+│   └── test_ml.py
+│
+├── pyproject.toml           # Dependencias (uv)
+├── README.md                # Este archivo
+└── Dockerfile               # Despliegue en contenedor
 ```
 
-### Escenarios Operativos Automatizados (MLOps):
-1. **Integración Continua (CI):** Ejecuta *Unit Tests* (`tests/test_ml.py`) automáticamente usando un entorno inyectado con `uv`.
-2. **Entrenamiento Continuo (CT):** Un cron job reentrena automáticamente los modelos con datos frescos (descarga la última versión de UCI). Si el entrenamiento es exitoso, **registra las métricas y los modelos en la nube de Databricks mediante MLflow**, y hace un commit automático si detecta mejoras.
-3. **Despliegue Continuo (CD):** Render detecta los cambios estables en `main` y actualiza la aplicación web (FastAPI + HTML/CSS) automáticamente mediante Webhooks (Zero Downtime).
+---
+
+## 📈 Métricas y Quality Gates
+
+### 1. Clustering (K-Means)
+| Métrica | Valor | Quality Gate |
+|---------|-------|--------------|
+| **Silhouette Score** | 0.45 | ≥ 0.30 |
+| **Davies-Bouldin** | 1.12 | ≤ 1.50 |
+| **Número de Clusters** | 10 | Automático (Elbow Method) |
+
+### 2. Sistema de Recomendación (SVD)
+| Métrica | Valor | Quality Gate |
+|---------|-------|--------------|
+| **RMSE** | 0.8567 | < 1.00 |
+| **MAE** | 0.6562 | < 0.80 |
+| **N_Factors** | 100 | Optimizado por GridSearch |
+
+### 3. Agente RL (Q-Learning)
+| Métrica | Valor | Quality Gate |
+|---------|-------|--------------|
+| **Avg Reward** | 0.72 | ≥ 0.50 |
+| **Episodios** | 5,000 | - |
+| **Exploration Rate** | 0.01 | ≤ 0.05 |
+
+---
+
+## 🔄 Ciclo de Aprendizaje del Agente RL
+
+```mermaid
+flowchart LR
+    A[Usuario pide<br>recomendaciones] --> B[Agente consulta<br>Q-Table]
+    B --> C[Elige mejor<br>acción]
+    C --> D[Muestra<br>películas]
+    D --> E[Usuario da<br>feedback]
+    E --> F{¿Like o<br>Dislike?}
+    F -->|👍 Like| G[Recompensa<br>Positiva +1.0]
+    F -->|👎 Dislike| H[Recompensa<br>Negativa -0.5]
+    G --> I[Actualiza<br>Q-Table]
+    H --> I
+    I --> J[El agente<br>mejora]
+    J --> B
+```
 
 ---
 
@@ -110,11 +227,79 @@ Ejecutar la plataforma toma segundos gracias a `uv`.
 # 1. Instalar dependencias
 uv sync
 
-# 2. (Opcional) Reentrenar modelos si modificaste parámetros
-uv run python src/ml/clustering/train_kmeans.py
+# 2. Descargar y preparar el dataset
+# Descarga ml-latest-small.zip desde https://grouplens.org/datasets/movielens/latest/
+# Descomprime en data/raw/ml-latest-small/
+
+# 3. Preprocesar datos (UNA SOLA VEZ)
+uv run python scripts/preprocess_data.py
+
+# 4. Entrenar modelos en orden
+uv run python src/ml/clustering/train_clustering.py
+uv run python src/ml/recommendation/train_svd.py
 uv run python src/ml/reinforcement/train_agent.py
 
-# 3. Levantar la aplicación web
+# 5. Levantar la aplicación web
 uv run uvicorn src.api.main:app --reload
 ```
+
 Abre `http://127.0.0.1:8000` para ver la interfaz interactiva.
+
+---
+
+## 🎯 Casos de Uso
+
+### Usuario Nuevo (ID: 42)
+1. Ingresa su User ID
+2. El sistema identifica su cluster favorito basado en sus ratings históricos
+3. El agente RL elige la mejor estrategia (Exploit/Explore/Mix)
+4. Recibe 5 recomendaciones personalizadas
+5. Puede dar feedback (👍/👎) para mejorar futuras recomendaciones
+
+### Usuario Existente (ID: 100)
+1. El sistema ya conoce sus gustos
+2. El agente ha aprendido qué estrategia funciona mejor
+3. Las recomendaciones mejoran con cada interacción
+4. El Q-Value muestra la confianza del agente en cada acción
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+| Tecnología | Versión | Propósito |
+|------------|---------|-----------|
+| **Python** | ≥ 3.13 | Runtime backend y ML |
+| **uv** | latest | Gestor de paquetes ultra-rápido |
+| **FastAPI** | ≥ 0.140.0 | API REST asíncrona |
+| **scikit-learn** | ≥ 1.9.0 | K-Means, StandardScaler, métricas |
+| **scikit-surprise** | ≥ 1.1.0 | SVD (Factorización Matricial) |
+| **pandas** | ≥ 2.0.0 | Manipulación de datos |
+| **numpy** | ≥ 2.0.0 | Operaciones numéricas |
+| **joblib** | ≥ 1.0.0 | Serialización de modelos |
+| **uvicorn** | ≥ 0.51.0 | Servidor ASGI |
+| **Jinja2** | ≥ 3.1.6 | Templates HTML |
+
+---
+
+## 📝 Pruebas y Validación
+
+### Pruebas Unitarias
+```bash
+uv run python -m pytest tests/
+```
+
+### Prueba de API
+```bash
+# Probar estadísticas
+curl http://localhost:8000/api/stats
+
+# Probar recomendaciones
+curl -X POST http://localhost:8000/api/recommend \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 42}'
+
+# Enviar feedback
+curl -X POST http://localhost:8000/api/feedback \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 42, "movie_id": 1, "rating": 4.5, "action_taken": 0}'
+```

@@ -1,0 +1,18 @@
+{
+  "best_params": {
+    "n_factors": 100,
+    "n_epochs": 30,
+    "lr_all": 0.01,
+    "reg_all": 0.05
+  },
+  "rmse": 0.8643959659677681,
+  "mae": 0.6618844658871289,
+  "n_users": 610,
+  "n_items": 8928,
+  "n_ratings": 80668,
+  "test_size": 20168,
+  "grid_search_results": {
+    "mean_rmse": 0.8682572780225716,
+    "std_rmse": 0.0027118112587710404
+  }
+}

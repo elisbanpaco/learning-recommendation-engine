@@ -3,134 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Engine Interface</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+    <title>🎬 Movie Recommender</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos para la notificación automática */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            background: #1a1a2e;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border: 1px solid rgba(255,255,255,0.1);
+            pointer-events: none;
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toast-notification.like {
+            border-left: 4px solid #4CAF50;
+        }
+        .toast-notification.dislike {
+            border-left: 4px solid #f44336;
+        }
+        .toast-notification .toast-icon {
+            margin-right: 10px;
+        }
+    </style>
 </head>
-<body>
+<body data-max-user="610" data-total-movies="9742" data-total-ratings="100836">
     <div class="app-container">
         <header class="page-header">
-            <h1 class="page-title">AI Engine Interface</h1>
-            <p class="page-description">Advanced telemetry inference powered by Unsupervised & Reinforcement Learning models.</p>
+            <div class="header-content">
+                <div class="logo-container">
+                    <span class="logo-icon">🎬</span>
+                    <h1 class="page-title">Movie Recommender</h1>
+                </div>
+                <div class="header-stats">
+                    <span class="stat-badge" id="stat-movies">🎥 9,742 movies</span>
+                    <span class="stat-badge" id="stat-users">👥 610 users</span>
+                    <span class="stat-badge" id="stat-ratings">⭐ 100,836 ratings</span>
+                </div>
+            </div>
+            <p class="page-description">
+                Discover movies using <strong>Unsupervised Learning</strong> + <strong>Reinforcement Learning</strong>.
+                The system learns what type of recommendation to give you.
+            </p>
         </header>
 
         <main class="dashboard-grid">
-            <!-- Left Panel: Input -->
-            <section class="card">
+            <!-- Left Panel -->
+            <section class="card card-input">
                 <div class="card-header">
-                    <h2 class="card-title">Telemetry Sync</h2>
+                    <h2 class="card-title">🎯 User Profile</h2>
                 </div>
                 <div class="card-content">
-                    <form id="student-form">
+                    <form id="user-form">
                         <div class="form-group">
-                            <label class="form-label" for="study_hours">Weekly Study Hours</label>
+                            <label class="form-label" for="user_id">
+                                👤 User ID
+                                <span class="label-hint">(1-610)</span>
+                            </label>
                             <div class="input-wrapper">
-                                <input type="number" id="study_hours" class="input-field" required min="0" max="100">
-                                <span class="input-suffix">HRS</span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="last_score">Last Assessment Score</label>
-                            <div class="input-wrapper">
-                                <input type="number" id="last_score" class="input-field" required min="0" max="20">
-                                <span class="input-suffix">/20</span>
+                                <input 
+                                    type="number" 
+                                    id="user_id" 
+                                    class="input-field" 
+                                    required 
+                                    min="1" 
+                                    max="610"
+                                    placeholder="e.g.: 42"
+                                    value="42"
+                                >
+                                <span class="input-suffix">🎬</span>
                             </div>
                         </div>
                         <button type="submit" class="btn-primary" id="submit-btn">
-                            Initialize Sequence
+                            🎬 Get Recommendations
                         </button>
                     </form>
+                    
+                    <div class="info-box">
+                        <p class="info-text">
+                            💡 <strong>How it works?</strong> The system first identifies your favorite movie cluster,
+                            then decides whether to <strong>Exploit</strong>, <strong>Explore</strong> or <strong>Mix</strong> using
+                            <strong>Reinforcement Learning</strong>.
+                        </p>
+                    </div>
                 </div>
             </section>
 
-            <!-- Right Panel: Output -->
-            <section class="card">
+            <!-- Right Panel -->
+            <section class="card card-output">
                 <div class="card-header">
-                    <h2 class="card-title">Neural Output</h2>
+                    <h2 class="card-title">🎞️ Recommendations</h2>
                 </div>
                 <div class="card-content">
                     <div id="status-view" class="status-indicator">
-                        <svg class="status-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span class="status-text">Awaiting telemetry...</span>
+                        <div class="status-icon-container">
+                            <span class="status-emoji">🎥</span>
+                        </div>
+                        <span class="status-text">Enter a User ID to start...</span>
                     </div>
 
                     <div id="results-view" class="results-container hidden">
-                        <div class="result-item">
-                            <span class="result-label">Unsupervised Cluster</span>
-                            <span class="result-value" id="out-profile">-</span>
+                        <div class="result-item action-display">
+                            <div class="action-badge">
+                                <span id="out-action-emoji">⭐</span>
+                                <span id="out-action-text">Popular Choice</span>
+                            </div>
+                            <span class="result-label">🎯 RL Agent Strategy</span>
                         </div>
+
                         <div class="result-item">
-                            <span class="result-label">Q-Learning Policy</span>
-                            <span class="result-value" id="out-action">-</span>
+                            <span class="result-label">📊 Q-Value (Confidence)</span>
+                            <span class="result-value" id="out-qvalue">-</span>
+                        </div>
+
+                        <div class="result-item">
+                            <span class="result-label">📊 Identified Cluster</span>
+                            <span class="result-value" id="out-cluster">-</span>
+                        </div>
+
+                        <div class="result-item movies-list">
+                            <span class="result-label">🎬 Top Recommendations</span>
+                            <div id="out-movies" class="movies-container"></div>
+                        </div>
+
+                        <div class="feedback-section">
+                            <p class="feedback-label">Did you like the recommendations?</p>
+                            <div class="feedback-buttons">
+                                <button class="feedback-btn like" onclick="sendFeedback(1)">👍 Like</button>
+                                <button class="feedback-btn dislike" onclick="sendFeedback(0)">👎 Dislike</button>
+                            </div>
+                            <button class="btn-secondary" onclick="refreshRecommendations()">
+                                🔄 Try another strategy
+                            </button>
                         </div>
                     </div>
                 </div>
             </section>
         </main>
+
+        <footer class="page-footer">
+            <p>
+                🧠 <strong>AI Smart Learning Platform</strong> • 
+                Unsupervised Learning (K-Means) + Reinforcement Learning (Q-Learning) • 
+                MovieLens Dataset
+            </p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="toast-notification">
+        <span class="toast-icon" id="toast-icon">👍</span>
+        <span id="toast-message">Thanks for your feedback!</span>
     </div>
 
     <script>
-        const form = document.getElementById('student-form');
+        // Variables del DOM
+        const form = document.getElementById('user-form');
         const btn = document.getElementById('submit-btn');
         const statusView = document.getElementById('status-view');
         const resultsView = document.getElementById('results-view');
-        
-        // Setup icons
-        const iconWaiting = `<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>`;
-        const iconLoading = `<path d="M21 12a9 9 0 1 1-6.219-8.56"></path>`;
-        const iconError = `<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>`;
-        
+        let currentUserId = null;
+        let currentAction = null;
+        let toastTimeout = null;
+
+        // Función para mostrar notificación automática
+        function showToast(message, type = 'like') {
+            const toast = document.getElementById('toast-notification');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-message');
+            
+            // Limpiar timeout anterior
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+                toast.classList.remove('show');
+            }
+            
+            // Configurar mensaje e ícono
+            if (type === 'like') {
+                icon.textContent = '👍';
+                toast.className = 'toast-notification like';
+            } else {
+                icon.textContent = '👎';
+                toast.className = 'toast-notification dislike';
+            }
+            msg.textContent = message;
+            
+            // Mostrar notificación
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Ocultar después de 3 segundos
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // UI Loading State
-            btn.innerText = 'Processing...';
+            const userIdInput = document.getElementById('user_id');
+            const userId = parseInt(userIdInput.value);
+            const maxUserId = 610;
+            
+            if (!userId || userId < 1 || userId > maxUserId) {
+                showToast('Please enter an ID between 1 and ' + maxUserId, 'dislike');
+                userIdInput.focus();
+                return;
+            }
+
+            currentUserId = userId;
+            
+            btn.innerText = '⏳ Loading...';
             btn.disabled = true;
             resultsView.classList.add('hidden');
             
             statusView.classList.remove('hidden');
-            statusView.classList.add('computing');
-            statusView.querySelector('.status-icon').innerHTML = iconLoading;
-            statusView.querySelector('.status-text').innerText = 'Running Inference...';
-
-            const data = {
-                study_hours: document.getElementById('study_hours').value,
-                last_score: document.getElementById('last_score').value
-            };
+            statusView.className = 'status-indicator loading';
+            statusView.querySelector('.status-emoji').textContent = '🎬';
+            statusView.querySelector('.status-text').textContent = 'Analyzing profile...';
 
             try {
-                const fetchReq = fetch('/api/recommend', {
+                const response = await fetch('/api/recommend', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                }).then(r => r.json());
-                
-                // Keep the loading state slightly longer for better UX
-                const [_, result] = await Promise.all([
-                    new Promise(resolve => setTimeout(resolve, 600)),
-                    fetchReq
-                ]);
-                
-                // Show results
-                statusView.classList.add('hidden');
-                statusView.classList.remove('computing');
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+
+                if (data.status === 'error') {
+                    throw new Error(data.message);
+                }
+
+                statusView.className = 'status-indicator hidden';
                 resultsView.classList.remove('hidden');
+
+                const actionEmojis = {
+                    '0': '⭐',
+                    '1': '🔍',
+                    '2': '🎭'
+                };
+                document.getElementById('out-action-emoji').textContent = actionEmojis[data.action_taken] || '🎬';
+                document.getElementById('out-action-text').textContent = data.action_description;
+                currentAction = data.action_taken;
+                document.getElementById('out-cluster').textContent = 'Cluster ' + data.user_cluster;                
+                document.getElementById('out-qvalue').textContent = 'Q = ' + data.q_value;
                 
-                document.getElementById('out-profile').innerText = result.simulated_profile;
-                document.getElementById('out-action').innerText = result.recommended_action;
+                const moviesContainer = document.getElementById('out-movies');
+                moviesContainer.innerHTML = '';
                 
+                data.recommendations.forEach(function(movie, index) {
+                    const stars = '⭐'.repeat(Math.round(movie.predicted_rating));
+                    const movieCard = document.createElement('div');
+                    movieCard.className = 'movie-card';
+                    movieCard.innerHTML = 
+                        '<div class="movie-rank">#' + (index + 1) + '</div>' +
+                        '<div class="movie-info">' +
+                            '<div class="movie-title">' + movie.title + '</div>' +
+                            '<div class="movie-genres">' + movie.genres + '</div>' +
+                            '<div class="movie-rating">' + stars + ' ' + movie.predicted_rating.toFixed(1) + '/5</div>' +
+                        '</div>';
+                    moviesContainer.appendChild(movieCard);
+                });
+
+                showToast('✨ Recommendations ready!', 'like');
+
             } catch (error) {
                 console.error(error);
-                statusView.classList.remove('computing');
-                statusView.querySelector('.status-icon').innerHTML = iconError;
-                statusView.querySelector('.status-text').innerText = 'Connection Error';
+                statusView.className = 'status-indicator error';
+                statusView.querySelector('.status-emoji').textContent = '⚠️';
+                statusView.querySelector('.status-text').textContent = error.message || 'Error getting recommendations';
+                showToast('Error: ' + (error.message || 'Could not get recommendations'), 'dislike');
             } finally {
-                btn.innerText = 'Initialize Sequence';
+                btn.innerText = '🎬 Get Recommendations';
                 btn.disabled = false;
             }
         });
+
+        async function sendFeedback(like) {
+            if (!currentUserId || !currentAction) {
+                showToast('Please get recommendations first', 'dislike');
+                return;
+            }
+            
+            try {
+                await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        movie_id: 0,
+                        rating: like ? 5.0 : 1.0,
+                        action_taken: parseInt(currentAction)
+                    })
+                });
+                
+                // Mostrar notificación automática
+                if (like) {
+                    showToast('👍 Thanks for your feedback!', 'like');
+                } else {
+                    showToast('👎 Thanks for your feedback!', 'dislike');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error sending feedback', 'dislike');
+            }
+        }
+
+        async function refreshRecommendations() {
+            form.dispatchEvent(new Event('submit'));
+        }
     </script>
 </body>
 </html>
