@@ -22,3 +22,7 @@ mlruns/
 # IDEs
 .vscode/
 .idea/
+
+# Documentos temporales o locales
+informe/
+guia_pruebas_mlops.md
