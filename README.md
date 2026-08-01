@@ -11,6 +11,15 @@
 
 ---
 
+## 🌐 Live Demo & UI
+
+¡Explora la aplicación desplegada en producción!
+**🔗 [Live Demo en Render](https://learning-recommendation-engine.onrender.com/)**
+
+![UI Cinematográfica Dark Theme](assets/UI.png)
+
+---
+
 ## 📖 Sobre el Proyecto
 
 Este proyecto es una aplicación de recomendación de películas que combina técnicas avanzadas de Machine Learning para ofrecer recomendaciones personalizadas e inteligentes. El sistema utiliza:
@@ -180,23 +189,22 @@ learning-recommendation-engine/
 ### 1. Clustering (K-Means)
 | Métrica | Valor | Quality Gate |
 |---------|-------|--------------|
-| **Silhouette Score** | 0.45 | ≥ 0.30 |
-| **Davies-Bouldin** | 1.12 | ≤ 1.50 |
-| **Número de Clusters** | 10 | Automático (Elbow Method) |
+| **Silhouette Score** | 0.2481 | ≥ 0.20 |
+| **Davies-Bouldin** | 1.3042 | ≤ 1.50 |
+| **Número de Clusters** | 10 | Automático (Silhouette Method) |
 
 ### 2. Sistema de Recomendación (SVD)
-| Métrica | Valor | Quality Gate |
-|---------|-------|--------------|
-| **RMSE** | 0.8567 | < 1.00 |
-| **MAE** | 0.6562 | < 0.80 |
-| **N_Factors** | 100 | Optimizado por GridSearch |
+| Métrica | Valor | Parámetros Óptimos (GridSearch) |
+|---------|-------|--------------------------------|
+| **RMSE** | 0.8671 | n_factors = 50 |
+| **MAE** | 0.6646 | n_epochs = 20, lr_all = 0.01 |
 
 ### 3. Agente RL (Q-Learning)
-| Métrica | Valor | Quality Gate |
-|---------|-------|--------------|
-| **Avg Reward** | 0.72 | ≥ 0.50 |
-| **Episodios** | 5,000 | - |
-| **Exploration Rate** | 0.01 | ≤ 0.05 |
+| Métrica | Valor | Descripción |
+|---------|-------|-------------|
+| **Avg Reward (Train)** | 0.7931 | Recompensa promedio en entrenamiento |
+| **Avg Reward (Val)** | 0.7828 | Recompensa en ambiente simulado |
+| **Episodios** | 5,000 | Iteraciones de aprendizaje |
 
 ---
 
