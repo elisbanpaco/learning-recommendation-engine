@@ -2,7 +2,7 @@
   "n_clusters": 10,
   "silhouette_score": 0.24810200338376903,
   "davies_bouldin_score": 1.3041520347855386,
-  "inertia": 101628.63029821687,
+  "inertia": 101628.63029821924,
   "n_samples": 9742,
   "n_features": 20,
   "feature_names": [
