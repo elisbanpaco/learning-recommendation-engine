@@ -5,43 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎬 Movie Recommender</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        /* Estilos para la notificación automática */
-        .toast-notification {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            padding: 16px 24px;
-            border-radius: 12px;
-            background: #1a1a2e;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            font-size: 16px;
-            font-weight: 500;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            border: 1px solid rgba(255,255,255,0.1);
-            pointer-events: none;
-        }
-        .toast-notification.show {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .toast-notification.like {
-            border-left: 4px solid #4CAF50;
-        }
-        .toast-notification.dislike {
-            border-left: 4px solid #f44336;
-        }
-        .toast-notification .toast-icon {
-            margin-right: 10px;
-        }
-    </style>
 </head>
 <body data-max-user="610" data-total-movies="9742" data-total-ratings="100836">
     <div class="app-container">
@@ -73,7 +36,7 @@
                     <form id="user-form">
                         <div class="form-group">
                             <label class="form-label" for="user_id">
-                                👤 User ID
+                                User ID
                                 <span class="label-hint">(1-610)</span>
                             </label>
                             <div class="input-wrapper">
@@ -87,7 +50,7 @@
                                     placeholder="e.g.: 42"
                                     value="42"
                                 >
-                                <span class="input-suffix">🎬</span>
+                                <span class="input-suffix">👤</span>
                             </div>
                         </div>
                         <button type="submit" class="btn-primary" id="submit-btn">
@@ -97,7 +60,7 @@
                     
                     <div class="info-box">
                         <p class="info-text">
-                            💡 <strong>How it works?</strong> The system first identifies your favorite movie cluster,
+                            <strong>How it works?</strong> The system first identifies your favorite movie cluster,
                             then decides whether to <strong>Exploit</strong>, <strong>Explore</strong> or <strong>Mix</strong> using
                             <strong>Reinforcement Learning</strong>.
                         </p>
@@ -119,26 +82,27 @@
                     </div>
 
                     <div id="results-view" class="results-container hidden">
-                        <div class="result-item action-display">
+                        <div class="action-display">
+                            <span class="result-label">RL Agent Strategy</span>
                             <div class="action-badge">
                                 <span id="out-action-emoji">⭐</span>
                                 <span id="out-action-text">Popular Choice</span>
                             </div>
-                            <span class="result-label">🎯 RL Agent Strategy</span>
                         </div>
 
-                        <div class="result-item">
-                            <span class="result-label">📊 Q-Value (Confidence)</span>
-                            <span class="result-value" id="out-qvalue">-</span>
+                        <div class="stats-row">
+                            <div class="result-item">
+                                <span class="result-label">Q-Value (Confidence)</span>
+                                <span class="result-value" id="out-qvalue">-</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Identified Cluster</span>
+                                <span class="result-value" id="out-cluster">-</span>
+                            </div>
                         </div>
 
-                        <div class="result-item">
-                            <span class="result-label">📊 Identified Cluster</span>
-                            <span class="result-value" id="out-cluster">-</span>
-                        </div>
-
-                        <div class="result-item movies-list">
-                            <span class="result-label">🎬 Top Recommendations</span>
+                        <div class="movies-list">
+                            <span class="result-label">Top Recommendations</span>
                             <div id="out-movies" class="movies-container"></div>
                         </div>
 
@@ -263,7 +227,7 @@
                 document.getElementById('out-action-text').textContent = data.action_description;
                 currentAction = data.action_taken;
                 document.getElementById('out-cluster').textContent = 'Cluster ' + data.user_cluster;                
-                document.getElementById('out-qvalue').textContent = 'Q = ' + data.q_value;
+                document.getElementById('out-qvalue').textContent = (data.q_value !== undefined && data.q_value !== null) ? 'Q = ' + parseFloat(data.q_value).toFixed(2) : 'N/A';
                 
                 const moviesContainer = document.getElementById('out-movies');
                 moviesContainer.innerHTML = '';
@@ -277,7 +241,7 @@
                         '<div class="movie-info">' +
                             '<div class="movie-title">' + movie.title + '</div>' +
                             '<div class="movie-genres">' + movie.genres + '</div>' +
-                            '<div class="movie-rating">' + stars + ' ' + movie.predicted_rating.toFixed(1) + '/5</div>' +
+                            '<div class="movie-rating">' + stars + ' ' + parseFloat(movie.predicted_rating).toFixed(1) + '/5</div>' +
                         '</div>';
                     moviesContainer.appendChild(movieCard);
                 });
