@@ -47,6 +47,6 @@ jobs:
         MLFLOW_TRACKING_URI: databricks
         MLFLOW_EXPERIMENT_NAME: /Shared/mlops_experiment_${{ github.sha }}
       run: |
-        uv sync
-        uv run python src/ml/clustering/train_kmeans.py
+        uv sync        
+        uv run python src/ml/clustering/train_clustering.py
         uv run python src/ml/reinforcement/train_agent.py

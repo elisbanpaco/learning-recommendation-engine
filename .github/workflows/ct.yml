@@ -27,14 +27,18 @@ jobs:
     - name: Install dependencies
       run: uv sync
 
+    - name: Preprocess data (downloads dataset automatically)
+      run: uv run python scripts/preprocess_data.py
+
     - name: Run Training (Registra en Databricks)
       env:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         MLFLOW_TRACKING_URI: databricks
         MLFLOW_EXPERIMENT_NAME: /Shared/mlops_clustering_prod
-      run: |
-        uv run python src/ml/clustering/train_kmeans.py
+      run: |        
+        uv run python src/ml/clustering/train_clustering.py
+        uv run python src/ml/recommendation/train_svd.py
         uv run python src/ml/reinforcement/train_agent.py
 
     - name: Auto-Commit New Models (Si son mejores)

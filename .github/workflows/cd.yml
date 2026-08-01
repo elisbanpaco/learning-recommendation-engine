@@ -1,28 +1,41 @@
-name: Continuous Deployment (CD - Render)
+name: Continuous Deployment (CD)
 
 on:
-  workflow_run:
-    workflows: ["Continuous Integration (CI)"]
-    types:
-      - completed
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-24.04
-    # Solo despliega si los tests del CI pasaron (opcional, pero buena práctica MLOps)
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
-    
     steps:
-    - name: Trigger Render Deployment via Webhook
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+        
+    - name: Install dependencies
+      run: uv sync
+
+    - name: Preprocess data (downloads dataset automatically)
+      run: uv run python scripts/preprocess_data.py
+
+    - name: Train models
+      run: |        
+        uv run python src/ml/clustering/train_clustering.py
+        uv run python src/ml/recommendation/train_svd.py
+        uv run python src/ml/reinforcement/train_agent.py
+
+    - name: Deploy to Render
       env:
-        RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
       run: |
-        if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
-          echo "Advertencia: El secreto RENDER_DEPLOY_HOOK_URL no está configurado."
-          echo "Agrega el Deploy Hook de Render en Settings > Secrets and variables > Actions."
-          exit 0
-        fi
-        echo "Desplegando nueva versión en producción..."
-        curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+        curl -X POST https://api.render.com/deploy/${{ secrets.RENDER_SERVICE_ID }} \
+          -H "Authorization: Bearer $RENDER_API_KEY"
