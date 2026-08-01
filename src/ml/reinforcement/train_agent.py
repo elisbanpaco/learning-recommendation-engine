@@ -5,6 +5,8 @@ Entrenamiento del agente Q-Learning con validación y métricas.
 import numpy as np
 import pandas as pd
 import json
+import os
+import mlflow
 from pathlib import Path
 from environment import MovieRecommendationEnv
 from agent import QLearningAgent
@@ -111,6 +113,26 @@ def train_agent():
         json.dump(metrics, f, indent=2)
     print(f" Métricas guardadas en rl_metrics.json")
     
+    # MLflow tracking
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "local")
+    if tracking_uri != "local":
+        mlflow.set_tracking_uri(tracking_uri)
+    exp_name = os.getenv("MLFLOW_EXPERIMENT_NAME", "movie-recommender")
+    mlflow.set_experiment(exp_name)
+    
+    with mlflow.start_run(run_name="QLearning_Agent"):
+        mlflow.log_params({
+            'episodes': episodes,
+            'learning_rate': agent.alpha,
+            'discount_factor': agent.gamma
+        })
+        mlflow.log_metrics({
+            'avg_reward_training': metrics['avg_reward_training'],
+            'avg_reward_validation': metrics['avg_reward_validation']
+        })
+        mlflow.log_artifact(str(model_path))
+        mlflow.log_artifact(str(models_dir / 'rl_metrics.json'))
+        
     # 7. Mostrar política aprendida
     print("\n Política aprendida:")
     action_names = {0: 'Explotar', 1: 'Explorar', 2: 'Mezclar'}

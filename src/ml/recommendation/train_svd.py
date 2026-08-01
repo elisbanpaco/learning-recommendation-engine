@@ -9,6 +9,8 @@ from surprise import accuracy
 import pandas as pd
 import joblib
 import json
+import os
+import mlflow
 from pathlib import Path
 import numpy as np
 
@@ -114,6 +116,23 @@ def train_svd():
     with open(models_dir / 'svd_metrics.json', 'w') as f:
         json.dump(metrics, f, indent=2)
     print(f"Métricas guardadas en svd_metrics.json")
+    
+    # MLflow tracking
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "local")
+    if tracking_uri != "local":
+        mlflow.set_tracking_uri(tracking_uri)
+    exp_name = os.getenv("MLFLOW_EXPERIMENT_NAME", "movie-recommender")
+    mlflow.set_experiment(exp_name)
+    
+    with mlflow.start_run(run_name="SVD_Recommendation"):
+        mlflow.log_params(best_params)
+        mlflow.log_metrics({
+            'rmse': float(rmse),
+            'mae': float(mae),
+            'mean_cv_rmse': float(gs.best_score['rmse'])
+        })
+        mlflow.log_artifact(str(models_dir / 'svd_model.pkl'))
+        mlflow.log_artifact(str(models_dir / 'svd_metrics.json'))
     
     return model, metrics
 

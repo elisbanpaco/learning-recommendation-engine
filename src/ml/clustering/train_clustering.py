@@ -12,6 +12,8 @@ import joblib
 import os
 import json
 from pathlib import Path
+import mlflow
+import mlflow.sklearn
 
 def train_clustering():
     """Entrena K-Means dinámicamente detectando columnas de géneros"""
@@ -116,6 +118,30 @@ def train_clustering():
     with open(models_dir / 'clustering_metrics.json', 'w') as f:
         json.dump(metrics, f, indent=2)
     print(f"\n Métricas guardadas en clustering_metrics.json")
+    
+    # MLflow tracking
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "local")
+    if tracking_uri != "local":
+        mlflow.set_tracking_uri(tracking_uri)
+    exp_name = os.getenv("MLFLOW_EXPERIMENT_NAME", "movie-recommender")
+    mlflow.set_experiment(exp_name)
+    
+    with mlflow.start_run(run_name="K-Means_Clustering"):
+        mlflow.log_params({
+            'k_range_start': min(k_range),
+            'k_range_end': max(k_range),
+            'best_k': best_k,
+            'random_state': 42
+        })
+        mlflow.log_metrics({
+            'silhouette_score': float(final_silhouette),
+            'davies_bouldin_score': float(final_db),
+            'inertia': float(kmeans.inertia_)
+        })
+        mlflow.sklearn.log_model(kmeans, "kmeans_model")
+        mlflow.sklearn.log_model(scaler, "scaler_model")
+        mlflow.log_artifact(str(models_dir / 'clustering_metrics.json'))
+        mlflow.log_artifact(str(processed_dir / 'movies_with_clusters.csv'))
     
     return kmeans, scaler, metrics
 
