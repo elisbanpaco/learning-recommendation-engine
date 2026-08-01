@@ -26,6 +26,13 @@ jobs:
     - name: Install dependencies
       run: uv sync
       
+    - name: Generate Data and Models for testing
+      run: |
+        uv run python scripts/preprocess_data.py
+        uv run python src/ml/clustering/train_clustering.py
+        uv run python src/ml/recommendation/train_svd.py
+        uv run python src/ml/reinforcement/train_agent.py
+        
     - name: Run unit tests
       run: uv run python -m unittest discover -s tests
 
