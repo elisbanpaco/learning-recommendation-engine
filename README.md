@@ -272,22 +272,7 @@ Abre `http://127.0.0.1:8000` para ver la interfaz interactiva.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
 
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| **Python** | ≥ 3.13 | Runtime backend y ML |
-| **uv** | latest | Gestor de paquetes ultra-rápido |
-| **FastAPI** | ≥ 0.140.0 | API REST asíncrona |
-| **scikit-learn** | ≥ 1.9.0 | K-Means, StandardScaler, métricas |
-| **scikit-surprise** | ≥ 1.1.0 | SVD (Factorización Matricial) |
-| **pandas** | ≥ 2.0.0 | Manipulación de datos |
-| **numpy** | ≥ 2.0.0 | Operaciones numéricas |
-| **joblib** | ≥ 1.0.0 | Serialización de modelos |
-| **uvicorn** | ≥ 0.51.0 | Servidor ASGI |
-| **Jinja2** | ≥ 3.1.6 | Templates HTML |
-
----
 
 ## 📝 Pruebas y Validación
 
