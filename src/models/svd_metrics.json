@@ -12,7 +12,7 @@
   "n_ratings": 80668,
   "test_size": 20168,
   "grid_search_results": {
-    "mean_rmse": 0.8671846795582279,
-    "std_rmse": 0.0035528951495003847
+    "mean_rmse": 0.8682366531172724,
+    "std_rmse": 0.002084258127141663
   }
 }
