@@ -1,18 +1,18 @@
 {
   "best_params": {
-    "n_factors": 20,
-    "n_epochs": 20,
+    "n_factors": 100,
+    "n_epochs": 30,
     "lr_all": 0.01,
     "reg_all": 0.05
   },
-  "rmse": 0.8694209120236592,
-  "mae": 0.666966733119412,
+  "rmse": 0.8643959659677681,
+  "mae": 0.6618844658871289,
   "n_users": 610,
   "n_items": 8928,
   "n_ratings": 80668,
   "test_size": 20168,
   "grid_search_results": {
-    "mean_rmse": 0.8678501010960432,
-    "std_rmse": 0.0042367483588854945
+    "mean_rmse": 0.8667615405265664,
+    "std_rmse": 0.003540018344213241
   }
 }
